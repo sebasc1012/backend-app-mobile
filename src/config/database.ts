@@ -5,7 +5,6 @@ import { env, isDevelopment } from "./env";
 // Evita crear múltiples instancias de PrismaClient en desarrollo
 // (por el hot-reload de ts-node-dev / nodemon)
 declare global {
-  // eslint-disable-next-line no-var
   var prismaGlobal: PrismaClient | undefined;
 }
 

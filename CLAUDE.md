@@ -98,6 +98,12 @@ debe actualizarse con cada avance significativo para mantener contexto trazable.
 - Configuración: `SUPABASE_URL`, `SUPABASE_SECRET_KEY` y `SUPABASE_PUBLISHABLE_KEY` deben
   pertenecer al mismo proyecto. Tras cambiar `.env`, se debe reiniciar el servidor porque
   las variables se leen al arranque.
+- Implementado: CI en GitHub Actions (`.github/workflows/ci.yml`) para pushes y pull
+  requests a `main`. Instala dependencias con `npm ci`, genera Prisma Client, ejecuta
+  lint, typecheck, build, migraciones en PostgreSQL 16 temporal y tests.
+- Decisión: La calidad local se ejecuta con `npm run lint`, `npm run typecheck`,
+  `npm run build` y `npm test`. TypeScript se fija en la rama estable 5.9 para mantener
+  compatibilidad con el parser de ESLint para TypeScript.
 
 ---
 
@@ -152,3 +158,4 @@ un campo válido y no admite campos desconocidos.
 - Probar `POST /api/users/profile` end-to-end con un `access_token` vigente de Supabase
 - Diseñar los siguientes módulos de dominio y sus esquemas Prisma
 - Añadir pruebas automatizadas para autenticación, validación y perfiles
+- Ampliar la suite de pruebas de integración contra PostgreSQL de CI
