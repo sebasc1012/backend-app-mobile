@@ -4,6 +4,11 @@ import usersRouter from "../modules/users/users.routes";
 
 const router = Router();
 
+// Health check
+router.get("/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Endpoint protegido de prueba — valida que el middleware de auth funciona
 router.get("/me", requireAuth, (req, res) => {
   res.json({ user: req.user });
