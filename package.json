@@ -6,7 +6,12 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "dev:once": "tsx src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/server.js",
+    "build": "tsup src/server.ts --format esm --platform node --target node22 --out-dir dist --clean --sourcemap",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "prisma:generate": "prisma generate"
   },
   "author": "",
   "license": "ISC",
@@ -26,12 +31,16 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
     "prisma": "^7.9.1",
     "ts-node-dev": "^2.0.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.23.5",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.66.0"
   }
 }
