@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,30 +7,144 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-  PREFER_NOT_TO_SAY
-}
 
-/// Tabla que sincroniza con Supabase Auth (auth.users).
-/// El `id` NO se genera aquí: es el mismo UUID que Supabase asigna al
-/// crear el usuario en Auth. Este modelo guarda datos de perfil/negocio
-/// adicionales que Supabase Auth no maneja.
+// -----------------------------------------------------
+// PROFILE
+// -----------------------------------------------------
+
+/// Tabla de perfil de la aplicación.
+/// El `id` corresponde al UUID de `auth.users` en Supabase Auth.
+/// Supabase Auth administra las credenciales y autenticación.
+/// Esta tabla contiene únicamente información adicional del usuario.
 model Profile {
   id                   String    @id @db.Uuid
   fullName             String?   @map("full_name")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  gender               Gender?
+  gender               String?
   country              String?   @db.Char(2)
   phone                String?
   avatarUrl            String?   @map("avatar_url")
-  deletedAt            DateTime? @map("deleted_at")
-  lastSeenAt           DateTime? @map("last_seen_at")
-  onboardingCompleted  Boolean   @default(false)
-  notificationsEnabled Boolean   @default(true)
 
-  @@map("profile")
+  onboardingCompleted  Boolean   @default(false) @map("onboarding_completed")
+  notificationsEnabled Boolean   @default(true) @map("notifications_enabled")
+
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  commitments          FinancialCommitment[]
+
+  @@map("profiles")
+}
+
+
+// -----------------------------------------------------
+// CATEGORY
+// -----------------------------------------------------
+
+/// Categorías globales utilizadas para clasificar compromisos financieros.
+model Category {
+  id           String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String                @unique
+
+  createdAt    DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  commitments FinancialCommitment[]
+
+  @@map("categories")
+}
+
+
+// -----------------------------------------------------
+// FINANCIAL COMMITMENT
+// -----------------------------------------------------
+
+/// Representa una obligación financiera recurrente o una deuda.
+/// No representa un pago concreto.
+/// Los pagos concretos se registran mediante Occurrence y Payment.
+model FinancialCommitment {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  userId             String       @map("user_id") @db.Uuid
+
+  type               String
+  name               String
+  description        String?
+
+  categoryId         String       @map("category_id") @db.Uuid
+  defaultAmount      Decimal?     @map("default_amount") @db.Decimal(14, 2)
+
+  frequency          String
+
+  startDate          DateTime     @map("start_date") @db.Date
+  recurrenceDay      Int?         @map("recurrence_day") @db.SmallInt
+
+  nextDueDate        DateTime     @map("next_due_date") @db.Date
+
+  reminderDaysBefore Int          @default(0) @map("reminder_days_before") @db.SmallInt
+
+  endDate            DateTime?    @map("end_date") @db.Date
+
+  status             String       @default("ACTIVE")
+
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user               Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category           Category     @relation(fields: [categoryId], references: [id])
+
+  occurrences        Occurrence[]
+
+  @@index([userId, nextDueDate])
+  @@map("financial_commitments")
+}
+
+
+// -----------------------------------------------------
+// OCCURRENCE
+// -----------------------------------------------------
+
+/// Representa una ocurrencia concreta de un compromiso.
+/// Ejemplo: el vencimiento del 15/09/2026 de una obligación mensual.
+model Occurrence {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  financialCommitmentId String              @map("financial_commitment_id") @db.Uuid
+
+  dueDate               DateTime            @map("due_date") @db.Date
+  status                String              @default("PENDING")
+
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  financialCommitment   FinancialCommitment @relation(fields: [financialCommitmentId], references: [id], onDelete: Cascade)
+
+  payment               Payment?
+
+  @@unique([financialCommitmentId, dueDate])
+  @@index([dueDate, status])
+  @@map("occurrences")
+}
+
+
+// -----------------------------------------------------
+// PAYMENT
+// -----------------------------------------------------
+
+/// Representa el pago registrado para una ocurrencia.
+/// En el MVP una ocurrencia puede tener máximo un pago.
+model Payment {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  occurrenceId String     @unique @map("occurrence_id") @db.Uuid
+
+  paidAmount   Decimal?   @map("paid_amount") @db.Decimal(14, 2)
+  paidAt       DateTime   @map("paid_at") @db.Timestamptz(6)
+
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  occurrence   Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
 }
