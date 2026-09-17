@@ -2,6 +2,9 @@ import { Router } from "express";
 import { requireAuth } from "../middlewares/auth.middleware";
 import usersRouter from "../modules/users/users.routes";
 import categoriesRouter from "../modules/categories/categories.routes";
+import commitmentsRouter from "../modules/commitments/commitments.routes";
+import occurrencesRouter from "../modules/occurrences/occurrences.routes";
+import paymentsRouter from "../modules/payments/payments.routes";
 
 const router = Router();
 
@@ -21,8 +24,8 @@ router.get("/me", requireAuth, (req, res) => {
 
 router.use("/users", usersRouter);
 router.use("/categories", categoriesRouter);
-
-
-
+router.use("/commitments", commitmentsRouter);
+router.use("/occurrences", occurrencesRouter);
+router.use("/payments", paymentsRouter);
 
 export { router as apiRouter };

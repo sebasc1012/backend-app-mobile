@@ -5,6 +5,7 @@ import { env } from "./config/env";
 import { apiRouter } from "./routes/index";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
+
 export function createApp() {
   const app = express();
 
