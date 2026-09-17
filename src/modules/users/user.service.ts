@@ -27,8 +27,8 @@ export async function upsertUserProfile(
 
   return prisma.profile.upsert({
     where: { id: userId },
-    create: { id: userId, ...profileData },
-    update: profileData,
+    create: { id: userId, ...profileData, onboardingCompleted: true },
+    update: { ...profileData, onboardingCompleted: true },
     select: profileSelect,
   });
 }
