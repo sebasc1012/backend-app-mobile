@@ -708,10 +708,10 @@ Estas operaciones deben tratarse como una unidad lógica cuando su consistencia 
 | Autenticación | ✓ Completo | Integración con Supabase Auth (requireAuth, optionalAuth) |
 | Perfil | ✓ Completo | Perfil local, onboarding automático y soft delete |
 | Categorías | ✓ Completo | Gestión de categorías (CRUD completo) |
-| Compromisos | Pendiente | Crear y gestionar `financial_commitments` |
-| Recurrencia | Pendiente | Cálculo de próximos vencimientos |
-| Ocurrencias | Pendiente | Generación y consulta de vencimientos |
-| Pagos | Pendiente | Registro de pagos e historial |
+| Compromisos | ✓ Completo | CRUD commitments, validación ownership, cálculo automático nextDueDate |
+| Recurrencia | ✓ Completo | Cálculo de próximos vencimientos (5 frecuencias: BIWEEKLY, MONTHLY, QUARTERLY, SEMIANNUALLY, ANNUALLY) |
+| Ocurrencias | ✓ Completo | Generación lazy, listado, obtención por ID, validación ownership |
+| Pagos | ✓ Completo | Registro transaccional de pagos, actualización automática nextDueDate |
 | Recordatorios | Pendiente | Cálculo y entrega de notificaciones |
 | Google Sign-In | Pendiente | OAuth mediante Supabase |
 | Sign in with Apple | Pendiente | OAuth mediante Supabase |
@@ -859,3 +859,58 @@ Las siguientes decisiones forman parte del diseño actual y no deben modificarse
 - `NUMERIC(14,2)` se utiliza para valores monetarios.
 - La lógica de negocio permanece en el backend.
 - Las operaciones que requieran consistencia entre múltiples entidades deben utilizar transacciones.
+
+---
+
+# Próximos pasos
+
+## Fase 6 — Recordatorios (Backend)
+
+- Implementar Reminder service
+- Cálculo de próximas notificaciones basado en `reminder_days_before`
+- Estrategia de ejecución (cron job, queue, etc)
+- Integración con notificaciones push
+
+## Fase 7 — Autenticación social (Backend)
+
+- Configurar proveedores OAuth en Supabase (Google, Apple)
+- Endpoints de login con Google
+- Endpoints de login con Apple
+
+## Frontend (Inmediato)
+
+- Construir login.tsx y signup.tsx con react-hook-form + Zod
+- Implementar selector real para gender en onboarding
+- Crear bucket avatars en Supabase Storage con RLS
+- End-to-end testing: signup → email verification → login → onboarding → app access
+
+## Fase 8 — Calidad (Testing)
+
+- Unit tests para authentication, validation
+- Integration tests para Commitments, Occurrences, Payments
+- Authorization/ownership tests
+- E2E testing del flujo completo
+
+---
+
+# Log de decisiones (2026-09-17)
+
+**Completado:**
+- ✓ Financial Commitment Service (CRUD, validación ownership)
+- ✓ Recurrence Service (extracción a servicio independiente, 5 frecuencias)
+- ✓ Occurrence Service (módulo separado, generación lazy)
+- ✓ Payment Service (transaccional, actualización automática nextDueDate)
+
+**Cambios estructurales:**
+- Occurrences movido de commitments/ a módulo separado independiente
+- Payments como módulo propio (no acoplado a commitments)
+- Recurrence como servicio puro (reutilizable)
+
+**Endpoints disponibles:**
+- Financial Commitments: GET /api/commitments, GET /api/commitments/:id, POST, PATCH, DELETE
+- Occurrences: GET /api/occurrences/commitment/:commitmentId, GET /api/occurrences/:id, POST .../generate, PATCH .../mark-paid
+- Payments: GET /api/payments/commitment/:commitmentId, GET /api/payments/:id, POST /api/payments
+
+**Próximo:**
+- Reminders (Fase 6) o Frontend Login/Signup
+- Decisión: completar backend Fase 6-7 o pivotear a frontend
