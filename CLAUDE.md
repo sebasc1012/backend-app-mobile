@@ -712,9 +712,8 @@ Estas operaciones deben tratarse como una unidad lógica cuando su consistencia 
 | Recurrencia | ✓ Completo | Cálculo de próximos vencimientos (5 frecuencias: BIWEEKLY, MONTHLY, QUARTERLY, SEMIANNUALLY, ANNUALLY) |
 | Ocurrencias | ✓ Completo | Generación lazy, listado, obtención por ID, validación ownership |
 | Pagos | ✓ Completo | Registro transaccional de pagos, actualización automática nextDueDate |
-| Recordatorios | Pendiente | Cálculo y entrega de notificaciones |
-| Google Sign-In | Pendiente | OAuth mediante Supabase |
-| Sign in with Apple | Pendiente | OAuth mediante Supabase |
+| Recordatorios | ✓ Completo | Cálculo on-demand + scheduler opcional (deshabilitado por defecto) |
+| Autenticación Social | ✓ Completo | OAuth via Supabase (Google, Apple) — frontend llama signInWithOAuth() |
 
 ---
 
@@ -864,20 +863,7 @@ Las siguientes decisiones forman parte del diseño actual y no deben modificarse
 
 # Próximos pasos
 
-## Fase 6 — Recordatorios (Backend)
-
-- Implementar Reminder service
-- Cálculo de próximas notificaciones basado en `reminder_days_before`
-- Estrategia de ejecución (cron job, queue, etc)
-- Integración con notificaciones push
-
-## Fase 7 — Autenticación social (Backend)
-
-- Configurar proveedores OAuth en Supabase (Google, Apple)
-- Endpoints de login con Google
-- Endpoints de login con Apple
-
-## Frontend (Inmediato)
+## Frontend (Inmediato — Bloqueante)
 
 - Construir login.tsx y signup.tsx con react-hook-form + Zod
 - Implementar selector real para gender en onboarding
@@ -891,9 +877,17 @@ Las siguientes decisiones forman parte del diseño actual y no deben modificarse
 - Authorization/ownership tests
 - E2E testing del flujo completo
 
+## Futuro
+
+- Integración de push notifications (usar scheduler de reminders)
+- Optimizaciones de escala
+- Reportes y analítica
+
 ---
 
-# Log de decisiones (2026-09-17)
+# Log de decisiones
+
+## 2026-09-17 (Primera sesión)
 
 **Completado:**
 - ✓ Financial Commitment Service (CRUD, validación ownership)
@@ -906,11 +900,30 @@ Las siguientes decisiones forman parte del diseño actual y no deben modificarse
 - Payments como módulo propio (no acoplado a commitments)
 - Recurrence como servicio puro (reutilizable)
 
-**Endpoints disponibles:**
+**Endpoints disponibles (Fase 4-5):**
 - Financial Commitments: GET /api/commitments, GET /api/commitments/:id, POST, PATCH, DELETE
 - Occurrences: GET /api/occurrences/commitment/:commitmentId, GET /api/occurrences/:id, POST .../generate, PATCH .../mark-paid
 - Payments: GET /api/payments/commitment/:commitmentId, GET /api/payments/:id, POST /api/payments
 
+## 2026-09-17 (Segunda sesión)
+
+**Completado:**
+- ✓ Fase 6 — Reminders Service (cálculo on-demand + scheduler con node-cron)
+- ✓ Fase 7 — Autenticación Social (OAuth via Supabase, GET /api/auth/providers)
+
+**Arquitectura Recordatorios:**
+- `reminders.service.ts`: Cálculo puro (daysUntilDue vs reminderDaysBefore)
+- `reminders.scheduler.ts`: Cron job diario (deshabilitado por defecto, activar con REMINDERS_SCHEDULER_ENABLED=true)
+- `GET /api/reminders`: Endpoint para consulta on-demand
+- TODO: Integrar con notificaciones push cuando el scheduler se active
+
+**Arquitectura OAuth:**
+- Supabase Auth maneja todo (Google, Apple, Email/Password)
+- Frontend llama `signInWithOAuth('google'|'apple')`
+- Backend valida token con middleware existente (mismo para todas las auth methods)
+- `GET /api/auth/providers`: Descubrimiento de proveedores disponibles
+- Configuración real de OAuth en consola de Supabase (solo necesita app IDs y redirect URIs)
+
 **Próximo:**
-- Reminders (Fase 6) o Frontend Login/Signup
-- Decisión: completar backend Fase 6-7 o pivotear a frontend
+- Frontend: Login/Signup screens (inmediato/bloqueante)
+- O: Testing (Fase 8)

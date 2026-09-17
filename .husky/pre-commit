@@ -1,0 +1,18 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit checks..."
+
+# Typecheck
+echo "▶ TypeScript check..."
+npm run typecheck || exit 1
+
+# Lint staged files
+echo "▶ Linting..."
+npx lint-staged || exit 1
+
+# Tests
+echo "▶ Tests..."
+npm test || exit 1
+
+echo "✓ All checks passed"
