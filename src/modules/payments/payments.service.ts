@@ -127,8 +127,9 @@ export async function getPaymentById(
     throw new ForbiddenError("No tienes permiso para acceder a este pago");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { occurrence, ...rest } = payment;
-  return serializePayment(rest);
+  return serializePayment(rest as Prisma.PaymentGetPayload<{ select: typeof paymentSelect }>);
 }
 
 const paymentSelect = {

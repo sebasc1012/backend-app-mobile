@@ -38,8 +38,11 @@ export async function getOccurrenceById(
     throw new ForbiddenError("No tienes permiso para acceder a esta ocurrencia");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { financialCommitment, ...rest } = occurrence;
-  return serializeOccurrence(rest);
+  return serializeOccurrence(
+    rest as Prisma.OccurrenceGetPayload<{ select: typeof occurrenceSelect }>,
+  );
 }
 
 export async function generateOccurrences(
@@ -110,8 +113,6 @@ export async function markPaid(
   if (occurrence.financialCommitment.userId !== userId) {
     throw new ForbiddenError("No tienes permiso para marcar esta ocurrencia");
   }
-
-  const { financialCommitment, ...rest } = occurrence;
 
   const updated = await prisma.occurrence.update({
     where: { id: occurrenceId },

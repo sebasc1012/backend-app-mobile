@@ -162,7 +162,7 @@ function validateOwnership(resourceUserId: string, authenticatedUserId: string):
   }
 }
 
-function handleCommitmentError(error: unknown, action: string): never {
+function handleCommitmentError(error: unknown, _action: string): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2025") {
       throw new NotFoundError("Compromiso financiero no encontrado");
