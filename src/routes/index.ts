@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth.middleware";
 import usersRouter from "../modules/users/users.routes";
+import categoriesRouter from "../modules/categories/categories.routes";
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.get("/me", requireAuth, (req, res) => {
 // router.use("/users", usersRouter);
 
 router.use("/users", usersRouter);
+router.use("/categories", categoriesRouter);
 
 
 

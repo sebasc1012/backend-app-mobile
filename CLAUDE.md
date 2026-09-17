@@ -704,10 +704,10 @@ Estas operaciones deben tratarse como una unidad lógica cuando su consistencia 
 
 | Módulo | Estado | Responsabilidad |
 |---|---|---|
-| Foundation | En construcción | Configuración, Prisma, errores, middleware y validación |
-| Autenticación | Parcial | Integración con Supabase Auth |
-| Perfil | Parcial | Perfil local, onboarding y soft delete |
-| Categorías | Pendiente | Gestión de categorías |
+| Foundation | ✓ Completo | Configuración, Prisma, errores, middleware y validación |
+| Autenticación | ✓ Completo | Integración con Supabase Auth (requireAuth, optionalAuth) |
+| Perfil | ✓ Completo | Perfil local, onboarding automático y soft delete |
+| Categorías | ✓ Completo | Gestión de categorías (CRUD completo) |
 | Compromisos | Pendiente | Crear y gestionar `financial_commitments` |
 | Recurrencia | Pendiente | Cálculo de próximos vencimientos |
 | Ocurrencias | Pendiente | Generación y consulta de vencimientos |
