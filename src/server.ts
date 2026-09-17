@@ -2,8 +2,12 @@ import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 import { prisma } from "./config/database";
+import { initReminderScheduler } from "./modules/reminders/reminders.scheduler";
 
 const app = createApp();
+
+// Initialize schedulers
+initReminderScheduler();
 
 const server = app.listen(env.PORT, () => {
   logger.info(
