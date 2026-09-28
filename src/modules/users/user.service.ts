@@ -1,6 +1,12 @@
 import { prisma } from "../../config/database";
 import type { Prisma } from "../../generated/prisma/client";
-import { ConflictError, ForbiddenError, NotFoundError } from "../../lib/errors";
+import { env } from "../../config/env";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../lib/errors";
 import type { UpdateProfileInput, UpsertProfileInput } from "./users.schema";
 
 export async function getUserProfile(userId: string) {
@@ -23,7 +29,7 @@ export async function upsertUserProfile(
     throw new ForbiddenError("La cuenta ha sido eliminada");
   }
 
-  const profileData = toProfileData(input);
+  const profileData = toProfileData(userId, input);
 
   return prisma.profile.upsert({
     where: { id: userId },
@@ -39,7 +45,7 @@ export async function updateUserProfile(
 ) {
   const result = await prisma.profile.updateMany({
     where: { id: userId, deletedAt: null },
-    data: toProfileData(input),
+    data: toProfileData(userId, input),
   });
 
   if (result.count === 0) {
@@ -91,7 +97,26 @@ const profileSelect = {
   updatedAt: true,
 } satisfies Prisma.ProfileSelect;
 
-function toProfileData(input: UpsertProfileInput | UpdateProfileInput) {
+// Nombre de archivo de un solo segmento: sin "/", "..", "%", "?" ni "#".
+const AVATAR_FILE_NAME = /^[A-Za-z0-9_-]+\.jpg$/;
+
+/**
+ * La foto de perfil solo puede ser un archivo de la carpeta del propio usuario
+ * en Supabase Storage: `finchoApp/avatars/{userId}/{archivo}.jpg`.
+ */
+export function isOwnAvatarUrl(url: string, userId: string) {
+  const prefix = `${env.SUPABASE_URL.replace(/\/+$/, "")}/storage/v1/object/public/finchoApp/avatars/${userId}/`;
+  return url.startsWith(prefix) && AVATAR_FILE_NAME.test(url.slice(prefix.length));
+}
+
+function toProfileData(
+  userId: string,
+  input: UpsertProfileInput | UpdateProfileInput,
+) {
+  if (input.avatarUrl && !isOwnAvatarUrl(input.avatarUrl, userId)) {
+    throw new BadRequestError("La foto de perfil debe estar en tu carpeta de Fincho");
+  }
+
   return {
     ...(input.fullName !== undefined && { fullName: input.fullName }),
     ...(input.gender !== undefined && { gender: input.gender }),

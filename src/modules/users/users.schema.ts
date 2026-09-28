@@ -5,7 +5,7 @@ const profileFields = {
   gender: z.enum(["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"]).optional(),
   country: z.string().trim().length(2).toUpperCase().optional(),
   phone: z.string().trim().min(5).max(30).optional(),
-  avatarUrl: z.url().optional(),
+  avatarUrl: z.url().nullable().optional(), // null = eliminar la foto (HU-03)
   notificationsEnabled: z.boolean().optional(),
 };
 

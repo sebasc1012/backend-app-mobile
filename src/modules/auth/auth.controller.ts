@@ -6,6 +6,7 @@ export const getProviders = (_req: Request, res: Response) => {
       { id: "email", name: "Email/Password" },
       { id: "google", name: "Google" },
       { id: "apple", name: "Apple" },
+      { id: "facebook", name: "Facebook" },
     ],
   });
 };
